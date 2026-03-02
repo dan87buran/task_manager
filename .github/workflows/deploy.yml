@@ -5,8 +5,8 @@ on:
     branches: [ main, develop, feature/ci-cd ]
   pull_request:
     branches: [ develop ]
-  workflow_dispatch:
-    
+  workflow_dispatch:   # позволяет запускать вручную
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -104,7 +104,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: ".,!./.git,!./.github,!./__pycache__,!./*.pyc"
-          target: /home/${{ secrets.SERVER_USER }}/task_manager
+          target: /home/${{ secrets.SERVER_USER }}/app
       - name: Create .env file on server
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -112,7 +112,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/task_manager
+            cd /home/${{ secrets.SERVER_USER }}/app
             echo "${{ secrets.ENV_FILE }}" > .env
       - name: Deploy with Docker Compose
         uses: appleboy/ssh-action@v0.1.5
@@ -121,7 +121,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/task_manager
+            cd /home/${{ secrets.SERVER_USER }}/app
             docker-compose down
             docker-compose up -d --build
             docker system prune -f
