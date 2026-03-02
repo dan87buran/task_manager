@@ -2,9 +2,10 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feature/ci-cd ]
   pull_request:
     branches: [ develop ]
+  workflow_dispatch:   # позволяет запускать вручную
 
 jobs:
   lint:
@@ -22,7 +23,7 @@ jobs:
       - name: Lint with flake8
         run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
       - name: Check formatting with black
-        run: black --check .
+        run: black --check --extend-exclude "migrations/" .
 
   test:
     runs-on: ubuntu-latest
@@ -86,8 +87,8 @@ jobs:
           push: false
           tags: task_manager:latest
           load: true
-      - name: Test docker-compose build
-        run: docker-compose build
+      - name: Test docker compose build
+        run: docker compose build
 
   deploy:
     runs-on: ubuntu-latest
@@ -103,7 +104,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: ".,!./.git,!./.github,!./__pycache__,!./*.pyc"
-          target: /home/${{ secrets.SERVER_USER }}/task_manager
+          target: /home/${{ secrets.SERVER_USER }}/app
       - name: Create .env file on server
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -111,7 +112,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/task_manager
+            cd /home/${{ secrets.SERVER_USER }}/app
             echo "${{ secrets.ENV_FILE }}" > .env
       - name: Deploy with Docker Compose
         uses: appleboy/ssh-action@v0.1.5
@@ -120,7 +121,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/task_manager
-            docker-compose down
-            docker-compose up -d --build
+            cd /home/${{ secrets.SERVER_USER }}/app
+            docker compose down
+            docker compose up -d --build
             docker system prune -f

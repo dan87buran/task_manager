@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task
 def send_task_notification(task_id, action):
     # Имитация отправки уведомления (например, email)
