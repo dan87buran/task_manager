@@ -8,3 +8,5 @@
    ```bash
    git clone <url>
    cd task_manager
+## CI/CD
+Автоматический деплой настроен через GitHub Actions.
