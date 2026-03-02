@@ -87,8 +87,8 @@ jobs:
           push: false
           tags: task_manager:latest
           load: true
-      - name: Test docker-compose build
-        run: docker-compose build
+      - name: Test docker compose build
+        run: docker compose build
 
   deploy:
     runs-on: ubuntu-latest
@@ -122,6 +122,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.SERVER_USER }}/app
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down
+            docker compose up -d --build
             docker system prune -f
